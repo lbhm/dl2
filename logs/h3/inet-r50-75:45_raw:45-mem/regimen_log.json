@@ -1,0 +1,13 @@
+{
+    "stage_0": {
+        "time": 11399.438610315323,
+        "epochs": 45,
+        "dataset": "data-sas/imagenet/jpeg-75"
+    },
+    "stage_1": {
+        "time": 11659.616940021515,
+        "epochs": 45,
+        "dataset": "data-sas/imagenet/raw"
+    },
+    "total_time": 23059.059897184372
+}
