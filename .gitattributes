@@ -1,0 +1,5 @@
+# Remove notebooks from language statistics
+notebooks/* -linguist-detectable
+
+# Remove command collections from language statistics
+scripts/*.sh -linguist-detectable

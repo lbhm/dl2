@@ -8,8 +8,11 @@ source venv/bin/activate
 # Dataset creation
 # Since ImageNet has a lot of different JPEG compression qualities, we check for each image if the compression target
 # is lower than the current compression quality before we recompress (only for JPEG targets).
-# Afterwards, copy the dataset variants to HDD as needed
+# Afterwards, copy the dataset variants to `data-hdd` or `data-sas` as needed
 python scripts/analyze_image_dataset.py -s data-ssd/imagenet/raw -o data-ssd/imagenet/stats.csv -a quality
+
+# Utility command for unmounting unused magick user filesystems if the above command throws warnings
+cat /etc/mtab | grep magick | awk '{ print $2 }' | xargs -l fusermount -uz
 
 # ImageNet
 python dl2/single_encoder.py pillow -f JPEG --quality 85 --quality-list data-ssd/imagenet/stats.csv data-ssd/imagenet/raw/ data-ssd/imagenet/jpeg-85
@@ -23,6 +26,7 @@ python dl2/single_encoder.py pillow -f WebP --quality 50 data-ssd/imagenet/raw/ 
 python dl2/single_encoder.py pillow -f WebP --quality 25 data-ssd/imagenet/raw/ data-ssd/imagenet/webp-25
 python dl2/single_encoder.py pillow -f WebP --quality 10 data-ssd/imagenet/raw/ data-ssd/imagenet/webp-10
 
+# Subsets of ImageNet for the compression vs subsampling trade-off analysis
 python scripts/create_data_subset.py data-ssd/imagenet/raw data-ssd/imagenet/raw-50/ -s 0.5
 python scripts/create_data_subset.py data-ssd/imagenet/raw data-ssd/imagenet/raw-40/ -s 0.4
 python scripts/create_data_subset.py data-ssd/imagenet/raw data-ssd/imagenet/raw-30/ -s 0.3
@@ -30,6 +34,7 @@ python scripts/create_data_subset.py data-ssd/imagenet/raw data-ssd/imagenet/raw
 python scripts/create_data_subset.py data-ssd/imagenet/raw data-ssd/imagenet/raw-10/ -s 0.1
 
 # Places365
+# Creating an image quality list is not necessary as the compression quality of Places365 images always is 75
 python dl2/single_encoder.py pillow -f JPEG --quality 50 data-ssd/places365/raw/ data-ssd/places365/jpeg-50
 python dl2/single_encoder.py pillow -f JPEG --quality 25 data-ssd/places365/raw/ data-ssd/places365/jpeg-25
 python dl2/single_encoder.py pillow -f JPEG --quality 10 data-ssd/places365/raw/ data-ssd/places365/jpeg-10
@@ -317,7 +322,7 @@ ptdist dl2/main.py -d data-sas/imagenet/raw-30/ -a alexnet -l dali-cpu -w 80 -b 
 ptdist dl2/main.py -d data-sas/imagenet/raw-20/ -a alexnet -l dali-cpu -w 80 -b 512 -e 90 --optimizer-batch-size 1536 --lr 0.1536 --warmup 8 --wd 3.0517578125e-05 --amp --static-loss-scale 128 --workspace logs/h2 -n space-inet-alex-raw20-mem;
 ptdist dl2/main.py -d data-sas/imagenet/raw-10/ -a alexnet -l dali-cpu -w 80 -b 512 -e 90 --optimizer-batch-size 1536 --lr 0.1536 --warmup 8 --wd 3.0517578125e-05 --amp --static-loss-scale 128 --workspace logs/h2 -n space-inet-alex-raw10-mem;
 
-Places365
+# Places365
 ptdist dl2/main.py -d data-sas/places365/raw-50/ -a resnet50 -l dali-cpu -w 16 -b 256 -e 90 --optimizer-batch-size 768 --lr 0.768 --wd 6.103515625e-05 --amp --static-loss-scale 128 --data-mean 116.7,112.5,104.0 --data-std 61.0,60.2,62.6 --num-classes 365 --workspace logs/h2 -n space-p365-r50-raw50-mem;
 ptdist dl2/main.py -d data-sas/places365/raw-40/ -a resnet50 -l dali-cpu -w 16 -b 256 -e 90 --optimizer-batch-size 768 --lr 0.768 --wd 6.103515625e-05 --amp --static-loss-scale 128 --data-mean 116.7,112.5,104.0 --data-std 61.0,60.2,62.6 --num-classes 365 --workspace logs/h2 -n space-p365-r50-raw40-mem;
 ptdist dl2/main.py -d data-sas/places365/raw-30/ -a resnet50 -l dali-cpu -w 16 -b 256 -e 90 --optimizer-batch-size 768 --lr 0.768 --wd 6.103515625e-05 --amp --static-loss-scale 128 --data-mean 116.7,112.5,104.0 --data-std 61.0,60.2,62.6 --num-classes 365 --workspace logs/h2 -n space-p365-r50-raw30-mem;
@@ -352,43 +357,43 @@ python dl2/regimen.py --stages 80,10 --datasets data-sas/imagenet/jpeg-75,data-s
 ##########
 
 clear-cache;
-memlim python dl2/main.py -d data-hdd/imagenet/raw/ -a resnet50 -l pytorch -w 10 -b 256 -e 6 --lr 0.256 --wd 6.103515625e-05 --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h5 -n inet-r50-hdd-raw-pytorch;
+memlim python dl2/main.py -d data-hdd/imagenet/raw/ -a resnet50 -l pytorch -w 10 -b 256 -e 6 --lr 0.256 --wd 6.103515625e-05 --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h4 -n inet-r50-hdd-raw-pytorch;
 clear-cache;
-memlim python dl2/main.py -d data-hdd/imagenet/raw/ -a resnet50 -l pytorch -w 10 -b 256 -e 6 --lr 0.256 --wd 6.103515625e-05 --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h5 -n inet-r50-hdd-raw-minio --dataset MinIOFolder --cache-size 60666413056;
+memlim python dl2/main.py -d data-hdd/imagenet/raw/ -a resnet50 -l pytorch -w 10 -b 256 -e 6 --lr 0.256 --wd 6.103515625e-05 --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h4 -n inet-r50-hdd-raw-minio --dataset MinIOFolder --cache-size 60666413056;
 clear-cache;
-memlim python dl2/main.py -d data-hdd/imagenet/jpeg-85/ -a resnet50 -l pytorch -w 10 -b 256 -e 6 --lr 0.256 --wd 6.103515625e-05 --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h5 -n inet-r50-hdd-jpeg85-pytorch;
+memlim python dl2/main.py -d data-hdd/imagenet/jpeg-85/ -a resnet50 -l pytorch -w 10 -b 256 -e 6 --lr 0.256 --wd 6.103515625e-05 --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h4 -n inet-r50-hdd-jpeg85-pytorch;
 clear-cache;
-memlim python dl2/main.py -d data-hdd/imagenet/jpeg-85/ -a resnet50 -l pytorch -w 10 -b 256 -e 6 --lr 0.256 --wd 6.103515625e-05 --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h5 -n inet-r50-hdd-jpeg85-minio --dataset MinIOFolder --cache-size 60666413056;
-clear-cache;
-
-clear-cache;
-memlim python dl2/main.py -d data-hdd/imagenet/raw/ -a resnet18 -l pytorch -w 32 -b 512 -e 6 --lr 0.512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h5 -n inet-r18-hdd-raw-pytorch;
-clear-cache;
-memlim python dl2/main.py -d data-hdd/imagenet/raw/ -a resnet18 -l pytorch -w 32 -b 512 -e 6 --lr 0.512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h5 -n inet-r18-hdd-raw-minio --dataset MinIOFolder --cache-size 48855252992;
-clear-cache;
-memlim python dl2/main.py -d data-hdd/imagenet/jpeg-85/ -a resnet18 -l pytorch -w 32 -b 512 -e 6 --lr 0.512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h5 -n inet-r18-hdd-jpeg85-pytorch;
-clear-cache;
-memlim python dl2/main.py -d data-hdd/imagenet/jpeg-85/ -a resnet18 -l pytorch -w 32 -b 512 -e 6 --lr 0.512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h5 -n inet-r18-hdd-jpeg85-minio --dataset MinIOFolder --cache-size 48855252992;
+memlim python dl2/main.py -d data-hdd/imagenet/jpeg-85/ -a resnet50 -l pytorch -w 10 -b 256 -e 6 --lr 0.256 --wd 6.103515625e-05 --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h4 -n inet-r50-hdd-jpeg85-minio --dataset MinIOFolder --cache-size 60666413056;
 clear-cache;
 
 clear-cache;
-memlim python dl2/main.py -d data-hdd/imagenet/raw/ -a alexnet -l pytorch -w 40 -b 512 -e 6 --lr 0.0512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h5 -n inet-alex-hdd-raw-pytorch;
+memlim python dl2/main.py -d data-hdd/imagenet/raw/ -a resnet18 -l pytorch -w 32 -b 512 -e 6 --lr 0.512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h4 -n inet-r18-hdd-raw-pytorch;
 clear-cache;
-memlim python dl2/main.py -d data-hdd/imagenet/raw/ -a alexnet -l pytorch -w 40 -b 512 -e 6 --lr 0.0512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h5 -n inet-alex-hdd-raw-minio --dataset MinIOFolder --cache-size 43486543872;
+memlim python dl2/main.py -d data-hdd/imagenet/raw/ -a resnet18 -l pytorch -w 32 -b 512 -e 6 --lr 0.512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h4 -n inet-r18-hdd-raw-minio --dataset MinIOFolder --cache-size 48855252992;
 clear-cache;
-memlim python dl2/main.py -d data-hdd/imagenet/jpeg-85/ -a alexnet -l pytorch -w 40 -b 512 -e 6 --lr 0.0512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h5 -n inet-alex-hdd-jpeg85-pytorch;
+memlim python dl2/main.py -d data-hdd/imagenet/jpeg-85/ -a resnet18 -l pytorch -w 32 -b 512 -e 6 --lr 0.512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h4 -n inet-r18-hdd-jpeg85-pytorch;
 clear-cache;
-memlim python dl2/main.py -d data-hdd/imagenet/jpeg-85/ -a alexnet -l pytorch -w 40 -b 512 -e 6 --lr 0.0512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h5 -n inet-alex-hdd-jpeg85-minio --dataset MinIOFolder --cache-size 43486543872;
+memlim python dl2/main.py -d data-hdd/imagenet/jpeg-85/ -a resnet18 -l pytorch -w 32 -b 512 -e 6 --lr 0.512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h4 -n inet-r18-hdd-jpeg85-minio --dataset MinIOFolder --cache-size 48855252992;
 clear-cache;
 
 clear-cache;
-memlim python dl2/main.py -d data-ssd/imagenet/raw/ -a alexnet -l pytorch -w 40 -b 512 -e 6 --lr 0.0512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h5 -n inet-alex-ssd-raw-pytorch;
+memlim python dl2/main.py -d data-hdd/imagenet/raw/ -a alexnet -l pytorch -w 40 -b 512 -e 6 --lr 0.0512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h4 -n inet-alex-hdd-raw-pytorch;
 clear-cache;
-memlim python dl2/main.py -d data-ssd/imagenet/raw/ -a alexnet -l pytorch -w 40 -b 512 -e 6 --lr 0.0512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h5 -n inet-alex-ssd-raw-minio --dataset MinIOFolder --cache-size 43486543872;
+memlim python dl2/main.py -d data-hdd/imagenet/raw/ -a alexnet -l pytorch -w 40 -b 512 -e 6 --lr 0.0512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h4 -n inet-alex-hdd-raw-minio --dataset MinIOFolder --cache-size 43486543872;
 clear-cache;
-memlim python dl2/main.py -d data-ssd/imagenet/jpeg-85/ -a alexnet -l pytorch -w 40 -b 512 -e 6 --lr 0.0512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h5 -n inet-alex-ssd-jpeg85-pytorch;
+memlim python dl2/main.py -d data-hdd/imagenet/jpeg-85/ -a alexnet -l pytorch -w 40 -b 512 -e 6 --lr 0.0512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h4 -n inet-alex-hdd-jpeg85-pytorch;
 clear-cache;
-memlim python dl2/main.py -d data-ssd/imagenet/jpeg-85/ -a alexnet -l pytorch -w 40 -b 512 -e 6 --lr 0.0512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h5 -n inet-alex-ssd-jpeg85-minio --dataset MinIOFolder --cache-size 43486543872;
+memlim python dl2/main.py -d data-hdd/imagenet/jpeg-85/ -a alexnet -l pytorch -w 40 -b 512 -e 6 --lr 0.0512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h4 -n inet-alex-hdd-jpeg85-minio --dataset MinIOFolder --cache-size 43486543872;
+clear-cache;
+
+clear-cache;
+memlim python dl2/main.py -d data-ssd/imagenet/raw/ -a alexnet -l pytorch -w 40 -b 512 -e 6 --lr 0.0512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h4 -n inet-alex-ssd-raw-pytorch;
+clear-cache;
+memlim python dl2/main.py -d data-ssd/imagenet/raw/ -a alexnet -l pytorch -w 40 -b 512 -e 6 --lr 0.0512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h4 -n inet-alex-ssd-raw-minio --dataset MinIOFolder --cache-size 43486543872;
+clear-cache;
+memlim python dl2/main.py -d data-ssd/imagenet/jpeg-85/ -a alexnet -l pytorch -w 40 -b 512 -e 6 --lr 0.0512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h4 -n inet-alex-ssd-jpeg85-pytorch;
+clear-cache;
+memlim python dl2/main.py -d data-ssd/imagenet/jpeg-85/ -a alexnet -l pytorch -w 40 -b 512 -e 6 --lr 0.0512 --warmup 8 --wd 3.0517578125e-05  --amp --static-loss-scale 128 --no-checkpoints --skip-validation --no-persistent-workers --workspace logs/h4 -n inet-alex-ssd-jpeg85-minio --dataset MinIOFolder --cache-size 43486543872;
 clear-cache;
 
 ###########################
@@ -396,119 +401,119 @@ clear-cache;
 ###########################
 
 ## H5a / H5b ##
-python dl2/single_encoder.py pillow data-sas/imagenet-5/raw data-sas/imagenet-5/jpeg-85                         -f JPEG --quality 85 -w 256 --workspace logs/h4 --experiment-name enc-mp-jpeg-85;
-python dl2/single_encoder.py pillow data-sas/imagenet-5/raw data-sas/imagenet-5/jpeg-50                         -f JPEG --quality 50 -w 256 --workspace logs/h4 --experiment-name enc-mp-jpeg-50;
-python dl2/single_encoder.py pillow data-sas/imagenet-5/raw data-sas/imagenet-5/jpeg-10                         -f JPEG --quality 10 -w 256 --workspace logs/h4 --experiment-name enc-mp-jpeg-10;
-python dl2/single_encoder.py pillow data-sas/imagenet-5/raw data-sas/imagenet-5/webp-85                         -f WebP --quality 85 -w 256 --workspace logs/h4 --experiment-name enc-mp-webp-85;
-python dl2/single_encoder.py pillow data-sas/imagenet-5/raw data-sas/imagenet-5/webp-50                         -f WebP --quality 50 -w 256 --workspace logs/h4 --experiment-name enc-mp-webp-50;
-python dl2/single_encoder.py pillow data-sas/imagenet-5/raw data-sas/imagenet-5/webp-10                         -f WebP --quality 10 -w 256 --workspace logs/h4 --experiment-name enc-mp-webp-10;
+python dl2/single_encoder.py pillow data-sas/imagenet-5/raw data-sas/imagenet-5/jpeg-85 -f JPEG --quality 85 -w 256 --workspace logs/h5 --experiment-name enc-mp-jpeg-85;
+python dl2/single_encoder.py pillow data-sas/imagenet-5/raw data-sas/imagenet-5/jpeg-50 -f JPEG --quality 50 -w 256 --workspace logs/h5 --experiment-name enc-mp-jpeg-50;
+python dl2/single_encoder.py pillow data-sas/imagenet-5/raw data-sas/imagenet-5/jpeg-10 -f JPEG --quality 10 -w 256 --workspace logs/h5 --experiment-name enc-mp-jpeg-10;
+python dl2/single_encoder.py pillow data-sas/imagenet-5/raw data-sas/imagenet-5/webp-85 -f WebP --quality 85 -w 256 --workspace logs/h5 --experiment-name enc-mp-webp-85;
+python dl2/single_encoder.py pillow data-sas/imagenet-5/raw data-sas/imagenet-5/webp-50 -f WebP --quality 50 -w 256 --workspace logs/h5 --experiment-name enc-mp-webp-50;
+python dl2/single_encoder.py pillow data-sas/imagenet-5/raw data-sas/imagenet-5/webp-10 -f WebP --quality 10 -w 256 --workspace logs/h5 --experiment-name enc-mp-webp-10;
 
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-1 -a bmshj2018-factorized -m mse -q 1 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-bmshj2018_factorized-mse-1;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_hyperprior-mse-1 -a bmshj2018-hyperprior -m mse -q 1 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-bmshj2018_hyperprior-mse-1;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018_mean-mse-1         -a mbt2018-mean         -m mse -q 1 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-mbt2018_mean-mse-1;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018-mse-1              -a mbt2018              -m mse -q 1 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-mbt2018-mse-1;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_anchor-mse-1     -a cheng2020-anchor     -m mse -q 1 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-cheng2020_anchor-mse-1;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_attn-mse-1       -a cheng2020-attn       -m mse -q 1 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-cheng2020_attn-mse-1;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-1 -a bmshj2018-factorized -m mse -q 1 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-bmshj2018_factorized-mse-1;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_hyperprior-mse-1 -a bmshj2018-hyperprior -m mse -q 1 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-bmshj2018_hyperprior-mse-1;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018_mean-mse-1         -a mbt2018-mean         -m mse -q 1 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-mbt2018_mean-mse-1;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018-mse-1              -a mbt2018              -m mse -q 1 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-mbt2018-mse-1;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_anchor-mse-1     -a cheng2020-anchor     -m mse -q 1 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-cheng2020_anchor-mse-1;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_attn-mse-1       -a cheng2020-attn       -m mse -q 1 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-cheng2020_attn-mse-1;
 
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-4 -a bmshj2018-factorized -m mse -q 4 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-bmshj2018_factorized-mse-4;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_hyperprior-mse-4 -a bmshj2018-hyperprior -m mse -q 4 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-bmshj2018_hyperprior-mse-4;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018_mean-mse-4         -a mbt2018-mean         -m mse -q 4 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-mbt2018_mean-mse-4;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018-mse-4              -a mbt2018              -m mse -q 4 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-mbt2018-mse-4;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_anchor-mse-3     -a cheng2020-anchor     -m mse -q 3 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-cheng2020_anchor-mse-3;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_attn-mse-3       -a cheng2020-attn       -m mse -q 3 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-cheng2020_attn-mse-3;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-4 -a bmshj2018-factorized -m mse -q 4 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-bmshj2018_factorized-mse-4;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_hyperprior-mse-4 -a bmshj2018-hyperprior -m mse -q 4 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-bmshj2018_hyperprior-mse-4;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018_mean-mse-4         -a mbt2018-mean         -m mse -q 4 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-mbt2018_mean-mse-4;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018-mse-4              -a mbt2018              -m mse -q 4 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-mbt2018-mse-4;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_anchor-mse-3     -a cheng2020-anchor     -m mse -q 3 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-cheng2020_anchor-mse-3;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_attn-mse-3       -a cheng2020-attn       -m mse -q 3 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-cheng2020_attn-mse-3;
 
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-8 -a bmshj2018-factorized -m mse -q 8 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-bmshj2018_factorized-mse-8;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_hyperprior-mse-8 -a bmshj2018-hyperprior -m mse -q 8 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-bmshj2018_hyperprior-mse-8;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018_mean-mse-8         -a mbt2018-mean         -m mse -q 8 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-mbt2018_mean-mse-8;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018-mse-8              -a mbt2018              -m mse -q 8 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-mbt2018-mse-8;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_anchor-mse-6     -a cheng2020-anchor     -m mse -q 6 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-cheng2020_anchor-mse-6;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_attn-mse-6       -a cheng2020-attn       -m mse -q 6 -w 32 -b 512 --workspace logs/h4 --experiment-name enc-dl-cheng2020_attn-mse-6;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-8 -a bmshj2018-factorized -m mse -q 8 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-bmshj2018_factorized-mse-8;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_hyperprior-mse-8 -a bmshj2018-hyperprior -m mse -q 8 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-bmshj2018_hyperprior-mse-8;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018_mean-mse-8         -a mbt2018-mean         -m mse -q 8 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-mbt2018_mean-mse-8;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018-mse-8              -a mbt2018              -m mse -q 8 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-mbt2018-mse-8;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_anchor-mse-6     -a cheng2020-anchor     -m mse -q 6 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-cheng2020_anchor-mse-6;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_attn-mse-6       -a cheng2020-attn       -m mse -q 6 -w 32 -b 512 --workspace logs/h5 --experiment-name enc-dl-cheng2020_attn-mse-6;
 
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-1 -a bmshj2018-factorized -m mse -q 1 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-bmshj2018_factorized-mse-1 --report-file cuda_run.json;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_hyperprior-mse-1 -a bmshj2018-hyperprior -m mse -q 1 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-bmshj2018_hyperprior-mse-1 --report-file cuda_run.json;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018_mean-mse-1         -a mbt2018-mean         -m mse -q 1 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-mbt2018_mean-mse-1 --report-file cuda_run.json;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018-mse-1              -a mbt2018              -m mse -q 1 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-mbt2018-mse-1 --report-file cuda_run.json;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_anchor-mse-1     -a cheng2020-anchor     -m mse -q 1 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-cheng2020_anchor-mse-1 --report-file cuda_run.json;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_attn-mse-1       -a cheng2020-attn       -m mse -q 1 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-cheng2020_attn-mse-1 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-1 -a bmshj2018-factorized -m mse -q 1 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-bmshj2018_factorized-mse-1 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_hyperprior-mse-1 -a bmshj2018-hyperprior -m mse -q 1 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-bmshj2018_hyperprior-mse-1 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018_mean-mse-1         -a mbt2018-mean         -m mse -q 1 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-mbt2018_mean-mse-1 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018-mse-1              -a mbt2018              -m mse -q 1 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-mbt2018-mse-1 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_anchor-mse-1     -a cheng2020-anchor     -m mse -q 1 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-cheng2020_anchor-mse-1 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_attn-mse-1       -a cheng2020-attn       -m mse -q 1 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-cheng2020_attn-mse-1 --report-file cuda_run.json;
 
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-4 -a bmshj2018-factorized -m mse -q 4 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-bmshj2018_factorized-mse-4 --report-file cuda_run.json;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_hyperprior-mse-4 -a bmshj2018-hyperprior -m mse -q 4 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-bmshj2018_hyperprior-mse-4 --report-file cuda_run.json;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018_mean-mse-4         -a mbt2018-mean         -m mse -q 4 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-mbt2018_mean-mse-4 --report-file cuda_run.json;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018-mse-4              -a mbt2018              -m mse -q 4 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-mbt2018-mse-4 --report-file cuda_run.json;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_anchor-mse-3     -a cheng2020-anchor     -m mse -q 3 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-cheng2020_anchor-mse-3 --report-file cuda_run.json;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_attn-mse-3       -a cheng2020-attn       -m mse -q 3 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-cheng2020_attn-mse-3 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-4 -a bmshj2018-factorized -m mse -q 4 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-bmshj2018_factorized-mse-4 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_hyperprior-mse-4 -a bmshj2018-hyperprior -m mse -q 4 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-bmshj2018_hyperprior-mse-4 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018_mean-mse-4         -a mbt2018-mean         -m mse -q 4 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-mbt2018_mean-mse-4 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018-mse-4              -a mbt2018              -m mse -q 4 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-mbt2018-mse-4 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_anchor-mse-3     -a cheng2020-anchor     -m mse -q 3 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-cheng2020_anchor-mse-3 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_attn-mse-3       -a cheng2020-attn       -m mse -q 3 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-cheng2020_attn-mse-3 --report-file cuda_run.json;
 
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-8 -a bmshj2018-factorized -m mse -q 8 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-bmshj2018_factorized-mse-8 --report-file cuda_run.json;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_hyperprior-mse-8 -a bmshj2018-hyperprior -m mse -q 8 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-bmshj2018_hyperprior-mse-8 --report-file cuda_run.json;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018_mean-mse-8         -a mbt2018-mean         -m mse -q 8 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-mbt2018_mean-mse-8 --report-file cuda_run.json;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018-mse-8              -a mbt2018              -m mse -q 8 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-mbt2018-mse-8 --report-file cuda_run.json;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_anchor-mse-6     -a cheng2020-anchor     -m mse -q 6 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-cheng2020_anchor-mse-6 --report-file cuda_run.json;
-python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_attn-mse-6       -a cheng2020-attn       -m mse -q 6 -w 32 -b 512 --device cuda --workspace logs/h4 --experiment-name enc-dl-cheng2020_attn-mse-6 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-8 -a bmshj2018-factorized -m mse -q 8 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-bmshj2018_factorized-mse-8 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_hyperprior-mse-8 -a bmshj2018-hyperprior -m mse -q 8 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-bmshj2018_hyperprior-mse-8 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018_mean-mse-8         -a mbt2018-mean         -m mse -q 8 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-mbt2018_mean-mse-8 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/mbt2018-mse-8              -a mbt2018              -m mse -q 8 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-mbt2018-mse-8 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_anchor-mse-6     -a cheng2020-anchor     -m mse -q 6 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-cheng2020_anchor-mse-6 --report-file cuda_run.json;
+python dl2/batch_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/cheng2020_attn-mse-6       -a cheng2020-attn       -m mse -q 6 -w 32 -b 512 --device cuda --workspace logs/h5 --experiment-name enc-dl-cheng2020_attn-mse-6 --report-file cuda_run.json;
 
-python dl2/batch_encoder.py lossyless  data-sas/imagenet-5/raw data-sas/imagenet-5/lossyless-0.1              --beta 0.1 -w 16 -b 1024 --device cuda --workspace logs/h4 --experiment-name enc-dl-lossyless-0.1;
-python dl2/batch_encoder.py lossyless  data-sas/imagenet-5/raw data-sas/imagenet-5/lossyless-0.05             --beta 0.05 -w 16 -b 1024 --device cuda --workspace logs/h4 --experiment-name enc-dl-lossyless-0.05;
-python dl2/batch_encoder.py lossyless  data-sas/imagenet-5/raw data-sas/imagenet-5/lossyless-0.01             --beta 0.01 -w 16 -b 1024 --device cuda --workspace logs/h4 --experiment-name enc-dl-lossyless-0.01;
+python dl2/batch_encoder.py lossyless  data-sas/imagenet-5/raw data-sas/imagenet-5/lossyless-0.1              --beta 0.1 -w 16 -b 1024 --device cuda --workspace logs/h5 --experiment-name enc-dl-lossyless-0.1;
+python dl2/batch_encoder.py lossyless  data-sas/imagenet-5/raw data-sas/imagenet-5/lossyless-0.05             --beta 0.05 -w 16 -b 1024 --device cuda --workspace logs/h5 --experiment-name enc-dl-lossyless-0.05;
+python dl2/batch_encoder.py lossyless  data-sas/imagenet-5/raw data-sas/imagenet-5/lossyless-0.01             --beta 0.01 -w 16 -b 1024 --device cuda --workspace logs/h5 --experiment-name enc-dl-lossyless-0.01;
 
-## Addition: comparison of batched and single image decoding to quantify effect of preprocessing on dataset size
-python dl2/single_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-1-mp  -a bmshj2018-factorized -m mse -q 1 -w 1 --workspace logs/h4 --experiment-name enc-mp-bmshj2018_factorized-mse-1;
-python dl2/single_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-4-mp  -a bmshj2018-factorized -m mse -q 4 -w 1 --workspace logs/h4 --experiment-name enc-mp-bmshj2018_factorized-mse-4;
-python dl2/single_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-8-mp  -a bmshj2018-factorized -m mse -q 8 -w 1 --workspace logs/h4 --experiment-name enc-mp-bmshj2018_factorized-mse-8;
+## Addition: comparison of batched and single image decoding to quantify the effect of batched preprocessing on the dataset size
+python dl2/single_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-1-mp  -a bmshj2018-factorized -m mse -q 1 -w 1 --workspace logs/h5 --experiment-name enc-mp-bmshj2018_factorized-mse-1;
+python dl2/single_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-4-mp  -a bmshj2018-factorized -m mse -q 4 -w 1 --workspace logs/h5 --experiment-name enc-mp-bmshj2018_factorized-mse-4;
+python dl2/single_encoder.py compressai data-sas/imagenet-5/raw data-sas/imagenet-5/bmshj2018_factorized-mse-8-mp  -a bmshj2018-factorized -m mse -q 8 -w 1 --workspace logs/h5 --experiment-name enc-mp-bmshj2018_factorized-mse-8;
 
 ## H5c ##
-timeout --preserve-status 2h python dl2/single_decoder.py data-sas/imagenet-5/jpeg-85                     -l pillow -w 256 --workspace logs/h4 --experiment-name dec-mp-jpeg-85;
-timeout --preserve-status 2h python dl2/single_decoder.py data-sas/imagenet-5/jpeg-50                     -l pillow -w 256 --workspace logs/h4 --experiment-name dec-mp-jpeg-50;
-timeout --preserve-status 2h python dl2/single_decoder.py data-sas/imagenet-5/jpeg-10                     -l pillow -w 256 --workspace logs/h4 --experiment-name dec-mp-jpeg-10;
-timeout --preserve-status 2h python dl2/single_decoder.py data-sas/imagenet-5/webp-85                     -l pillow -w 256 --workspace logs/h4 --experiment-name dec-mp-webp-85;
-timeout --preserve-status 2h python dl2/single_decoder.py data-sas/imagenet-5/webp-50                     -l pillow -w 256 --workspace logs/h4 --experiment-name dec-mp-webp-50;
-timeout --preserve-status 2h python dl2/single_decoder.py data-sas/imagenet-5/webp-10                     -l pillow -w 256 --workspace logs/h4 --experiment-name dec-mp-webp-10;
+timeout --preserve-status 2h python dl2/single_decoder.py data-sas/imagenet-5/jpeg-85                   -l pillow -w 256 --workspace logs/h5 --experiment-name dec-mp-jpeg-85;
+timeout --preserve-status 2h python dl2/single_decoder.py data-sas/imagenet-5/jpeg-50                   -l pillow -w 256 --workspace logs/h5 --experiment-name dec-mp-jpeg-50;
+timeout --preserve-status 2h python dl2/single_decoder.py data-sas/imagenet-5/jpeg-10                   -l pillow -w 256 --workspace logs/h5 --experiment-name dec-mp-jpeg-10;
+timeout --preserve-status 2h python dl2/single_decoder.py data-sas/imagenet-5/webp-85                   -l pillow -w 256 --workspace logs/h5 --experiment-name dec-mp-webp-85;
+timeout --preserve-status 2h python dl2/single_decoder.py data-sas/imagenet-5/webp-50                   -l pillow -w 256 --workspace logs/h5 --experiment-name dec-mp-webp-50;
+timeout --preserve-status 2h python dl2/single_decoder.py data-sas/imagenet-5/webp-10                   -l pillow -w 256 --workspace logs/h5 --experiment-name dec-mp-webp-10;
 
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/bmshj2018_factorized-mse-1 -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-bmshj2018_factorized-mse-1;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/bmshj2018_hyperprior-mse-1 -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-bmshj2018_hyperprior-mse-1;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/mbt2018_mean-mse-1         -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-mbt2018_mean-mse-1;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/mbt2018-mse-1              -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-mbt2018-mse-1;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/cheng2020_anchor-mse-1     -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-cheng2020_anchor-mse-1;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/cheng2020_attn-mse-1       -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-cheng2020_attn-mse-1;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/bmshj2018_factorized-mse-1 -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-bmshj2018_factorized-mse-1;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/bmshj2018_hyperprior-mse-1 -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-bmshj2018_hyperprior-mse-1;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/mbt2018_mean-mse-1         -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-mbt2018_mean-mse-1;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/mbt2018-mse-1              -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-mbt2018-mse-1;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/cheng2020_anchor-mse-1     -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-cheng2020_anchor-mse-1;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/cheng2020_attn-mse-1       -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-cheng2020_attn-mse-1;
 
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/bmshj2018_factorized-mse-4 -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-bmshj2018_factorized-mse-4;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/bmshj2018_hyperprior-mse-4 -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-bmshj2018_hyperprior-mse-4;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/mbt2018_mean-mse-4         -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-mbt2018_mean-mse-4;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/mbt2018-mse-4              -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-mbt2018-mse-4;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/cheng2020_anchor-mse-3     -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-cheng2020_anchor-mse-3;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/cheng2020_attn-mse-3       -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-cheng2020_attn-mse-3;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/bmshj2018_factorized-mse-4 -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-bmshj2018_factorized-mse-4;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/bmshj2018_hyperprior-mse-4 -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-bmshj2018_hyperprior-mse-4;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/mbt2018_mean-mse-4         -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-mbt2018_mean-mse-4;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/mbt2018-mse-4              -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-mbt2018-mse-4;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/cheng2020_anchor-mse-3     -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-cheng2020_anchor-mse-3;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/cheng2020_attn-mse-3       -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-cheng2020_attn-mse-3;
 
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/bmshj2018_factorized-mse-8 -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-bmshj2018_factorized-mse-8;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/bmshj2018_hyperprior-mse-8 -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-bmshj2018_hyperprior-mse-8;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/mbt2018_mean-mse-8         -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-mbt2018_mean-mse-8;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/mbt2018-mse-8              -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-mbt2018-mse-8;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/cheng2020_anchor-mse-6     -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-cheng2020_anchor-mse-6;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/cheng2020_attn-mse-6       -l compressai -w 8 --workspace logs/h4 --experiment-name dec-dl-cheng2020_attn-mse-6;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/bmshj2018_factorized-mse-8 -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-bmshj2018_factorized-mse-8;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/bmshj2018_hyperprior-mse-8 -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-bmshj2018_hyperprior-mse-8;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/mbt2018_mean-mse-8         -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-mbt2018_mean-mse-8;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/mbt2018-mse-8              -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-mbt2018-mse-8;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/cheng2020_anchor-mse-6     -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-cheng2020_anchor-mse-6;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/cheng2020_attn-mse-6       -l compressai -w 8 --workspace logs/h5 --experiment-name dec-dl-cheng2020_attn-mse-6;
 
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/lossyless-0.1              -l lossyless --beta 0.1 -w 8 --workspace logs/h4 --experiment-name dec-dl-lossyless-0.1;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/lossyless-0.05             -l lossyless --beta 0.05 -w 8 --workspace logs/h4 --experiment-name dec-dl-lossyless-0.05;
-timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/lossyless-0.01             -l lossyless --beta 0.01 -w 8 --workspace logs/h4 --experiment-name dec-dl-lossyless-0.01;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/lossyless-0.1              -l lossyless --beta 0.1 -w 8 --workspace logs/h5 --experiment-name dec-dl-lossyless-0.1;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/lossyless-0.05             -l lossyless --beta 0.05 -w 8 --workspace logs/h5 --experiment-name dec-dl-lossyless-0.05;
+timeout --preserve-status 2h python dl2/batch_decoder.py data-sas/imagenet-5/lossyless-0.01             -l lossyless --beta 0.01 -w 8 --workspace logs/h5 --experiment-name dec-dl-lossyless-0.01;
 
 ## Addition: lossyless vs conventional codecs on the entire dataset
-python dl2/single_encoder.py pillow data-sas/imagenet/raw data-sas/tmp/jpeg-85 -f JPEG --quality 85 -w 256 --workspace logs/h4 --experiment-name enc-mp-jpeg-85 --report-file full_dataset.json;
-python dl2/single_encoder.py pillow data-sas/imagenet/raw data-sas/tmp/jpeg-50 -f JPEG --quality 50 -w 256 --workspace logs/h4 --experiment-name enc-mp-jpeg-50 --report-file full_dataset.json;
-python dl2/single_encoder.py pillow data-sas/imagenet/raw data-sas/tmp/jpeg-10 -f JPEG --quality 10 -w 256 --workspace logs/h4 --experiment-name enc-mp-jpeg-10 --report-file full_dataset.json;
-python dl2/single_encoder.py pillow data-sas/imagenet/raw data-sas/tmp/webp-85 -f WebP --quality 85 -w 256 --workspace logs/h4 --experiment-name enc-mp-webp-85 --report-file full_dataset.json;
-python dl2/single_encoder.py pillow data-sas/imagenet/raw data-sas/tmp/webp-50 -f WebP --quality 50 -w 256 --workspace logs/h4 --experiment-name enc-mp-webp-50 --report-file full_dataset.json;
-python dl2/single_encoder.py pillow data-sas/imagenet/raw data-sas/tmp/webp-10 -f WebP --quality 10 -w 256 --workspace logs/h4 --experiment-name enc-mp-webp-10 --report-file full_dataset.json;
+python dl2/single_encoder.py pillow data-sas/imagenet/raw data-sas/tmp/jpeg-85 -f JPEG --quality 85 -w 256 --workspace logs/h5 --experiment-name enc-mp-jpeg-85 --report-file full_dataset.json;
+python dl2/single_encoder.py pillow data-sas/imagenet/raw data-sas/tmp/jpeg-50 -f JPEG --quality 50 -w 256 --workspace logs/h5 --experiment-name enc-mp-jpeg-50 --report-file full_dataset.json;
+python dl2/single_encoder.py pillow data-sas/imagenet/raw data-sas/tmp/jpeg-10 -f JPEG --quality 10 -w 256 --workspace logs/h5 --experiment-name enc-mp-jpeg-10 --report-file full_dataset.json;
+python dl2/single_encoder.py pillow data-sas/imagenet/raw data-sas/tmp/webp-85 -f WebP --quality 85 -w 256 --workspace logs/h5 --experiment-name enc-mp-webp-85 --report-file full_dataset.json;
+python dl2/single_encoder.py pillow data-sas/imagenet/raw data-sas/tmp/webp-50 -f WebP --quality 50 -w 256 --workspace logs/h5 --experiment-name enc-mp-webp-50 --report-file full_dataset.json;
+python dl2/single_encoder.py pillow data-sas/imagenet/raw data-sas/tmp/webp-10 -f WebP --quality 10 -w 256 --workspace logs/h5 --experiment-name enc-mp-webp-10 --report-file full_dataset.json;
 
-python dl2/single_decoder.py data-sas/tmp/jpeg-85 -l pillow -w 256 --workspace logs/h4 --experiment-name dec-mp-jpeg-85 --report-file full_dataset.json;
-python dl2/single_decoder.py data-sas/tmp/jpeg-50 -l pillow -w 256 --workspace logs/h4 --experiment-name dec-mp-jpeg-50 --report-file full_dataset.json;
-python dl2/single_decoder.py data-sas/tmp/jpeg-10 -l pillow -w 256 --workspace logs/h4 --experiment-name dec-mp-jpeg-10 --report-file full_dataset.json;
-python dl2/single_decoder.py data-sas/tmp/webp-85 -l pillow -w 256 --workspace logs/h4 --experiment-name dec-mp-webp-85 --report-file full_dataset.json;
-python dl2/single_decoder.py data-sas/tmp/webp-50 -l pillow -w 256 --workspace logs/h4 --experiment-name dec-mp-webp-50 --report-file full_dataset.json;
-python dl2/single_decoder.py data-sas/tmp/webp-10 -l pillow -w 256 --workspace logs/h4 --experiment-name dec-mp-webp-10 --report-file full_dataset.json;
+python dl2/single_decoder.py data-sas/tmp/jpeg-85 -l pillow -w 256 --workspace logs/h5 --experiment-name dec-mp-jpeg-85 --report-file full_dataset.json;
+python dl2/single_decoder.py data-sas/tmp/jpeg-50 -l pillow -w 256 --workspace logs/h5 --experiment-name dec-mp-jpeg-50 --report-file full_dataset.json;
+python dl2/single_decoder.py data-sas/tmp/jpeg-10 -l pillow -w 256 --workspace logs/h5 --experiment-name dec-mp-jpeg-10 --report-file full_dataset.json;
+python dl2/single_decoder.py data-sas/tmp/webp-85 -l pillow -w 256 --workspace logs/h5 --experiment-name dec-mp-webp-85 --report-file full_dataset.json;
+python dl2/single_decoder.py data-sas/tmp/webp-50 -l pillow -w 256 --workspace logs/h5 --experiment-name dec-mp-webp-50 --report-file full_dataset.json;
+python dl2/single_decoder.py data-sas/tmp/webp-10 -l pillow -w 256 --workspace logs/h5 --experiment-name dec-mp-webp-10 --report-file full_dataset.json;
 
-python dl2/batch_encoder.py lossyless data-sas/imagenet/raw data-sas/tmp/lossyless-0.1  --beta 0.1 -w 16 -b 1024 --device cuda --workspace logs/h4 --experiment-name enc-dl-lossyless-0.1 --report-file full_dataset.json;
-python dl2/batch_encoder.py lossyless data-sas/imagenet/raw data-sas/tmp/lossyless-0.05 --beta 0.05 -w 16 -b 1024 --device cuda --workspace logs/h4 --experiment-name enc-dl-lossyless-0.05 --report-file full_dataset.json;
-python dl2/batch_encoder.py lossyless data-sas/imagenet/raw data-sas/tmp/lossyless-0.01 --beta 0.01 -w 16 -b 1024 --device cuda --workspace logs/h4 --experiment-name enc-dl-lossyless-0.01 --report-file full_dataset.json;
+python dl2/batch_encoder.py lossyless data-sas/imagenet/raw data-sas/tmp/lossyless-0.1  --beta 0.1 -w 16 -b 1024 --device cuda --workspace logs/h5 --experiment-name enc-dl-lossyless-0.1 --report-file full_dataset.json;
+python dl2/batch_encoder.py lossyless data-sas/imagenet/raw data-sas/tmp/lossyless-0.05 --beta 0.05 -w 16 -b 1024 --device cuda --workspace logs/h5 --experiment-name enc-dl-lossyless-0.05 --report-file full_dataset.json;
+python dl2/batch_encoder.py lossyless data-sas/imagenet/raw data-sas/tmp/lossyless-0.01 --beta 0.01 -w 16 -b 1024 --device cuda --workspace logs/h5 --experiment-name enc-dl-lossyless-0.01 --report-file full_dataset.json;
 
-python dl2/batch_decoder.py data-sas/tmp/lossyless-0.1  -l lossyless --beta 0.1 -w 8 --workspace logs/h4 --experiment-name dec-dl-lossyless-0.1 --report-file full_dataset.json;
-python dl2/batch_decoder.py data-sas/tmp/lossyless-0.05 -l lossyless --beta 0.05 -w 8 --workspace logs/h4 --experiment-name dec-dl-lossyless-0.05 --report-file full_dataset.json;
-python dl2/batch_decoder.py data-sas/tmp/lossyless-0.01 -l lossyless --beta 0.01 -w 8 --workspace logs/h4 --experiment-name dec-dl-lossyless-0.01 --report-file full_dataset.json;
+python dl2/batch_decoder.py data-sas/tmp/lossyless-0.1  -l lossyless --beta 0.1 -w 8 --workspace logs/h5 --experiment-name dec-dl-lossyless-0.1 --report-file full_dataset.json;
+python dl2/batch_decoder.py data-sas/tmp/lossyless-0.05 -l lossyless --beta 0.05 -w 8 --workspace logs/h5 --experiment-name dec-dl-lossyless-0.05 --report-file full_dataset.json;
+python dl2/batch_decoder.py data-sas/tmp/lossyless-0.01 -l lossyless --beta 0.01 -w 8 --workspace logs/h5 --experiment-name dec-dl-lossyless-0.01 --report-file full_dataset.json;
 
 ##########
 ## Misc ##
@@ -554,6 +559,7 @@ thrashing-test "io-144G-dali" "sda4" "154618822656" "dali-cpu"
 thrashing-test "io-160G-pytorch" "sda4" "171798691840" "pytorch"
 thrashing-test "io-160G-dali" "sda4" "171798691840" "dali-cpu"
 
+# Resetting the memory limit to our default
 echo 68719476736 | tee /sys/fs/cgroup/memory/dl2/memory.limit_in_bytes
 set -x
 
@@ -613,6 +619,3 @@ memlim python dl2/main.py -d data-ssd/imagenet/jpeg-25/ -a alexnet -l dali-cpu -
 clear-cache;
 memlim python dl2/main.py -d data-ssd/imagenet/jpeg-10/ -a alexnet -l dali-cpu -w 40 -b 512 -e 6 --lr 0.0512 --wd 6.103515625e-05 --amp --static-loss-scale 128 --workspace logs/misc -n alex-jpeg10-ssd-w40;
 clear-cache;
-
-## Unmount magick user filesystems ##
-cat /etc/mtab | grep magick | awk '{ print $2 }' | xargs -l fusermount -uz
