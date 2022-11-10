@@ -121,7 +121,9 @@ Experiment logs for all results that we report in the paper are in `logs/`. The
 logs are organized by the correponding hypothesis that we invetigate in the paper.
 The experiment names, such as `inet-alex-ssd-raw-pytorch`, encode important parameters
 of the respective experiment. The full list of parameters is  always logged in
-the first line of each `experiment_report.json` file.
+the first line of each `experiment_report.json` file. In addition to the experiment
+logs, `logs/misc/` contains some additional summary plots about the datasets we
+used.
 
 **Note:** Some of the experiment folders in `h5/` (learned compression) are empty
 since the experiments did not finish within their time limit as we describe in
