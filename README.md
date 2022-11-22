@@ -1,9 +1,11 @@
 # (DL)² - A Deep Learning Data Loading Analysis Sandbox
 
 This repository contains the source code, experiment logs, and result analyses
-for the paper **"The Art of Losing to Win: Using Lossy Image Compression to Improve
-Data Loading in Deep Learning Pipelines"**. (DL)² is an experiment sandbox that we
-built for our research.
+for our ICDE 2023 paper **"The Art of Losing to Win: Using Lossy Image Compression
+to Improve Data Loading in Deep Learning Pipelines"**. A preprint of the paper is
+available at [[1]](https://lbeh.me/pdf/The_Art_of_Losing_to_Win.pdf).
+
+(DL)² is an experiment sandbox that we built for our research.
 
 ## Requirements
 
@@ -14,7 +16,7 @@ built for our research.
 * PyTorch 1.9
 
 PyTorch 1.9 is necessary due to suboptimal performance on NVIDIA Ampere GPUs of
-previous releases (see [[1]](https://github.com/pytorch/pytorch/issues/60434)).
+previous releases (see [[2]](https://github.com/pytorch/pytorch/issues/60434)).
 For other libraries used in this project, please see the respective
 requirements files for CUDA 10 and CUDA 11.
 
@@ -23,7 +25,7 @@ and gather log data. To run the analysis notebooks, a common Jupyter setup
 with `numpy`, `pandas`, and `matplotlib` is required. To generate plots in the
 same format as they appear in the paper, a LaTeX installation is necessary as
 well. To analyze image quality with the `analyze_image_dataset` script, `magick`
-must be installed.
+must be installed and accessible on your .
 
 ## Setup
 
@@ -47,7 +49,7 @@ directories with *x* referring to the storage type.
 
 ## Installation
 
-You can run the experiments in Docker a container or directly on your system.
+You can run the experiments in a Docker container or directly on your system.
 
 ### Docker Installation
 
@@ -73,6 +75,15 @@ pip install -r requirements_cuda11.txt
 
 ## Execution
 
+The main user interface of (DL)² is the `dl2/main.py` script. To get an overview
+of possible parameters and their usage, run
+
+```shell
+python dl2/main.py -h
+```
+
+Other scripts and helper tools all have a CLI documentation available via `-h`.
+ 
 ### Docker Execution
 
 We provide a convenience script called `run_docker.sh` that starts a docker
@@ -147,18 +158,28 @@ that link to disks of the respective type.
 **Note:** The command list was not designed to be executed in a fully automatic
 way so please read the comments. For example, we cannot provide a copy of the datasets
 that we use. To acquire a copy of ImageNet and Places365, please see the download
-instrcutions at [[2]](https://image-net.org/download.php) and
-[[3]](http://places2.csail.mit.edu/download.html).
+instrcutions at [[3]](https://image-net.org/download.php) and
+[[4]](http://places2.csail.mit.edu/download.html).
 
 **Warning:** Executing all the commands will take a *very* long time.
 
 ## Citation
 
-TBD
+```bibtex
+@inproceedings{behme_art_2023,
+    title = {The Art of Losing to Win: Using Lossy Image Compression to Improve Data Loading in Deep Learning Pipelines},
+    author = {Lennart Behme and Saravanan Thirumuruganathan and Alireza Rezaei Mahdiraji and Jorge{-}Arnulfo Quian\'{e}{-}Ruiz and Volker Markl},
+    booktitle = {39th {IEEE} International Conference on Data Engineering},
+    eventtitle =  {ICDE '23},
+    year = {2023},
+    address = {Anaheim, California}
+}
+```
 
 ## References
 
-* [1] <https://github.com/pytorch/pytorch/issues/60434>
-* [2] <https://image-net.org/download.php>
-* [3] <http://places2.csail.mit.edu/download.html>
+* [1] <https://lbeh.me/pdf/The_Art_of_Losing_to_Win.pdf>
+* [2] <https://github.com/pytorch/pytorch/issues/60434>
+* [3] <https://image-net.org/download.php>
+* [4] <http://places2.csail.mit.edu/download.html>
   
