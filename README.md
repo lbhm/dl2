@@ -25,7 +25,7 @@ and gather log data. To run the analysis notebooks, a common Jupyter setup
 with `numpy`, `pandas`, and `matplotlib` is required. To generate plots in the
 same format as they appear in the paper, a LaTeX installation is necessary as
 well. To analyze image quality with the `analyze_image_dataset` script, `magick`
-must be installed and accessible on your .
+must be installed and accessible on your `$PATH`.
 
 ## Setup
 
