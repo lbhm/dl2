@@ -83,7 +83,7 @@ python dl2/main.py -h
 ```
 
 Other scripts and helper tools all have a CLI documentation available via `-h`.
- 
+
 ### Docker Execution
 
 We provide a convenience script called `run_docker.sh` that starts a docker
@@ -99,7 +99,8 @@ This will start a bash shell in which you can run experiments such as
 ```shell
 python dl2/main.py -d <path_to_data> -a resnet50 -l dali-cpu -w 8 -b 256 -e 50 \
     -p 100 --label-smoothing 0.1 --lr 0.256 --lr-policy cosine --mom 0.875 \
-    --wd 3.0517578125e-05 --amp --static-loss-scale 128 --memory-format nhwc -n docker-test
+    --wd 3.0517578125e-05 --amp --static-loss-scale 128 --memory-format nhwc \
+    -n docker-test
 ```
 
 Alternatively, you can directly pass your command to the `run_docker.sh` script:
@@ -116,7 +117,8 @@ example:
 ```shell
 python dl2/main.py -d <path_to_data> -a resnet50 -l dali-cpu -w 8 -b 256 -e 50 \
     -p 100 --label-smoothing 0.1 --lr 0.256 --lr-policy cosine --mom 0.875 \
-    --wd 3.0517578125e-05 --amp --static-loss-scale 128 --memory-format nhwc -n native-test
+    --wd 3.0517578125e-05 --amp --static-loss-scale 128 --memory-format nhwc \
+    -n native-test
 ```
 
 To run an experiment with multple GPUs or in a distributed setup, prepend your
@@ -167,12 +169,17 @@ instrcutions at [[3]](https://image-net.org/download.php) and
 
 ```bibtex
 @inproceedings{behme_art_2023,
-    title = {The Art of Losing to Win: Using Lossy Image Compression to Improve Data Loading in Deep Learning Pipelines},
-    author = {Lennart Behme and Saravanan Thirumuruganathan and Alireza Rezaei Mahdiraji and Jorge{-}Arnulfo Quian\'{e}{-}Ruiz and Volker Markl},
-    booktitle = {39th {IEEE} International Conference on Data Engineering},
-    eventtitle =  {ICDE '23},
-    year = {2023},
-    address = {Anaheim, California}
+  title        = {The Art of Losing to Win: Using Lossy Image Compression 
+                  to Improve Data Loading in Deep Learning Pipelines},
+  author       = {Lennart Behme and 
+                  Saravanan Thirumuruganathan and 
+                  Alireza Rezaei Mahdiraji and 
+                  Jorge{-}Arnulfo Quian\'{e}{-}Ruiz and 
+                  Volker Markl},
+  year         = {2023},
+  booktitle    = {39th IEEE International Conference on Data Engineering},
+  address      = {Anaheim, California},
+  eventtitle   = {{ICDE} '23}
 }
 ```
 
@@ -182,4 +189,3 @@ instrcutions at [[3]](https://image-net.org/download.php) and
 * [2] <https://github.com/pytorch/pytorch/issues/60434>
 * [3] <https://image-net.org/download.php>
 * [4] <http://places2.csail.mit.edu/download.html>
-  

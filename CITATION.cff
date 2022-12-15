@@ -1,0 +1,68 @@
+cff-version: 1.2.0
+title: (DL)² - Deep Learning Data Loading Analysis
+message: >-
+  If you use this software and/ or our research findings,
+  please cite our work using the metadata from this file
+  or the BibTex entry in the Readme.
+authors:
+  - given-names: Lennart
+    family-names: Behme
+    email: lennart.behme@tu-berlin.de
+    affiliation: Technische Universität Berlin
+identifiers:
+  - type: url
+    value: >-
+      https://lbeh.me/pdf/The_Art_of_Losing_to_Win.pdf
+    description: Preprint
+repository-code: 'https://github.com/lbhm/dl2'
+abstract: >-
+  Training deep learning (DL) models often takes a
+  significant amount of time and is thus typically
+  performed on expensive GPUs to speed up the
+  process. However, data loading has recently been
+  identified as one of the main performance
+  bottlenecks in DL, resulting in GPU
+  under-utilization. Looking forward, the combination
+  of larger datasets and faster GPUs will exacerbate
+  the problem. The data management community has
+  started to address this by proposing data loading
+  optimization techniques, including lossy image
+  compression. While lossy compression is a
+  conceptually promising approach for mitigating data
+  loading bottlenecks in DL, there is only limited
+  understanding of its efficacy in terms of impact on
+  model throughput and accuracy. In this paper, we
+  present an extensive experimental analysis of lossy
+  image compression as a means to improve the
+  performance of neural network training. We find
+  that lossy compression can improve both throughput
+  and accuracy of DL pipelines if resources such as
+  time or storage capacity are limited. Furthermore,
+  the choice of compression quality and codec are
+  important hyperparameters when training deep neural
+  networks.
+keywords:
+  - deep learning
+  - data loading
+  - lossy compression
+license: Apache-2.0
+date-released: '2022-11-01'
+preferred-citation:
+  type: conference-paper
+  authors:
+  - family-names: "Behme"
+    given-names: "Lennart"
+  - family-names: "Thirumuruganathan"
+    given-names: "Saravanan"
+  - family-names: "Mahdiraji"
+    given-names: "Alireza Rezaei"
+  - family-names: "Quiané-Ruiz"
+    given-names: "Jorge-Arnulfo"
+  - family-names: "Markl"
+    given-names: "Volker"
+  title: >-
+    The Art of Losing to Win: Using Lossy Image Compression
+    to Improve Data Loading in Deep Learning Pipelines
+  year: 2023
+  conference: 39th IEEE International Conference on Data Engineering
+  location: Anaheim, California
