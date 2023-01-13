@@ -16,7 +16,6 @@ from .dali import get_dali_train_loader, get_dali_val_loader
 from .pytorch import get_pytorch_train_loader, get_pytorch_val_loader
 from .synthetic import get_synthetic_loader
 
-
 DATA_LOADER_CHOICES = ["dali-cpu", "dali-gpu", "pytorch", "synthetic"]
 
 

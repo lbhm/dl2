@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 from torch.nn.parallel import DistributedDataParallel
 
-from .model_zoo import MODELS, MODEL_CONFIGS
+from .model_zoo import MODEL_CONFIGS, MODELS
 
 
 class ModelAndLoss(nn.Module, ABC):

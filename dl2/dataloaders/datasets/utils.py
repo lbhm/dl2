@@ -16,8 +16,9 @@ import struct
 from typing import BinaryIO, Tuple
 
 import torch
+from compressai.zoo import image as image_zoo
+from compressai.zoo import models
 from torch.nn.functional import pad
-from compressai.zoo import image as image_zoo, models
 
 EXTENSIONS = (".ptci",)
 METRICS = list(sorted(set([k2 for k1, v in image_zoo.model_urls.items() for k2 in v.keys()])))

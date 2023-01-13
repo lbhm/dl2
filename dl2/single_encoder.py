@@ -18,18 +18,25 @@ import os
 import shutil
 import time
 from multiprocessing import Pool
-from typing import Tuple, List
+from typing import List, Tuple
 
 import compressai
 import numpy as np
 import pandas as pd
 import torch
-from PIL import Image
 from compressai.models import CompressionModel
-from compressai.zoo import image as image_zoo, models
+from compressai.zoo import image as image_zoo
+from compressai.zoo import models
+from dataloaders.datasets.utils import (
+    METRICS,
+    get_header,
+    pad_image,
+    write_bytes,
+    write_uchars,
+    write_uints,
+)
+from PIL import Image
 from torchvision.transforms.functional import to_tensor
-
-from dataloaders.datasets.utils import get_header, pad_image, METRICS, write_bytes, write_uchars, write_uints
 
 
 def parse_args():

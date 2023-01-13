@@ -31,9 +31,9 @@
 
 import os
 
-import torch
 import nvidia.dali.fn as fn
 import nvidia.dali.types as types
+import torch
 from nvidia.dali.pipeline import pipeline_def
 from nvidia.dali.plugin.pytorch import DALIClassificationIterator, LastBatchPolicy
 

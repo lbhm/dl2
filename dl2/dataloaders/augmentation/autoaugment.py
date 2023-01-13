@@ -1,9 +1,10 @@
 # License not provided by author
 # Taken from https://github.com/NVIDIA/DeepLearningExamples/blob/master/PyTorch/Classification/ConvNets/image_classification/autoaugment.py
 
-from PIL import Image, ImageEnhance, ImageOps
-import numpy as np
 import random
+
+import numpy as np
+from PIL import Image, ImageEnhance, ImageOps
 
 
 class AutoaugmentImageNetPolicy(object):

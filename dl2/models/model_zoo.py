@@ -15,8 +15,13 @@
 import torch.nn as nn
 import torchvision.models
 
-from .resnet_nvidia import BasicBlock, Bottleneck, ResNet, ResNetLayerFactory, SEBottleneck
-
+from .resnet_nvidia import (
+    BasicBlock,
+    Bottleneck,
+    ResNet,
+    ResNetLayerFactory,
+    SEBottleneck,
+)
 
 __all__ = ["ARCH_CHOICES", "CONFIG_CHOICES", "MODELS", "MODEL_CONFIGS"]
 

@@ -169,12 +169,12 @@ instrcutions at [[3]](https://image-net.org/download.php) and
 
 ```bibtex
 @inproceedings{behme_art_2023,
-  title        = {The Art of Losing to Win: Using Lossy Image Compression 
+  title        = {The Art of Losing to Win: Using Lossy Image Compression
                   to Improve Data Loading in Deep Learning Pipelines},
-  author       = {Lennart Behme and 
-                  Saravanan Thirumuruganathan and 
-                  Alireza Rezaei Mahdiraji and 
-                  Jorge{-}Arnulfo Quian\'{e}{-}Ruiz and 
+  author       = {Lennart Behme and
+                  Saravanan Thirumuruganathan and
+                  Alireza Rezaei Mahdiraji and
+                  Jorge{-}Arnulfo Quian\'{e}{-}Ruiz and
                   Volker Markl},
   year         = {2023},
   booktitle    = {39th IEEE International Conference on Data Engineering},

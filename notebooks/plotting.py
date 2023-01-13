@@ -43,19 +43,19 @@ COLOR_DICT = {
     "webp10": SNS_COLORS[5],
     "webp05": SNS_COLORS[6],
     "webp01": SNS_COLORS[7],
-    
+
     "synthetic": SNS_COLORS[0],
     "pytorch": SNS_COLORS[1],
     "dali": SNS_COLORS[2],
-    
+
     "r50": SNS_COLORS[0],
     "ResNet50": SNS_COLORS[0],
     "ResNet18": SNS_COLORS[1],
     "AlexNet": SNS_COLORS[2],
-    
+
     "rx": SNS_COLORS[0],
     "tx": SNS_COLORS[1],
-    
+
     "default": SNS_COLORS[0],
     "minio": SNS_COLORS[1],
     "compressed": SNS_COLORS[2],
@@ -98,7 +98,7 @@ def latexify(base_size=11):
         "xtick.labelsize": base_size * 0.9,
         "ytick.labelsize": base_size * 0.9,
     }
-    
+
     mpl.rcParams.update(params)
 
 

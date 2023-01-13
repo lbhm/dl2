@@ -18,7 +18,6 @@ from .compressai_folder import CompressAIFolder, compressai_worker_init_fn
 from .lossyless_folder import LossylessFolder
 from .min_io_folder import MinIOFolder, min_io_worker_init_fn
 
-
 DATASETS = {
     "ImageFolder": ImageFolder,
     "CompressAIFolder": CompressAIFolder,

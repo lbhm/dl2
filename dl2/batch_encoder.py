@@ -21,11 +21,17 @@ import compressai
 import numpy as np
 import torch
 from compressai.zoo import models
-from torchvision.datasets import ImageFolder
+from dataloaders.datasets.lossyless_folder import LOSSYLESS_WEIGHTS, ClipCompressor
+from dataloaders.datasets.utils import (
+    METRICS,
+    get_header,
+    pad_image,
+    write_bytes,
+    write_uchars,
+    write_uints,
+)
 from torchvision import transforms
-
-from dataloaders.datasets.lossyless_folder import ClipCompressor, LOSSYLESS_WEIGHTS
-from dataloaders.datasets.utils import get_header, pad_image, METRICS, write_bytes, write_uchars, write_uints
+from torchvision.datasets import ImageFolder
 
 
 def parse_args():

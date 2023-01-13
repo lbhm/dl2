@@ -36,11 +36,9 @@ import time
 
 import dllogger
 import torch
-
-from torch.cuda.amp import autocast
-
 import utils.logging as logging
 import utils.metrics as metrics
+from torch.cuda.amp import autocast
 from utils.timeout_handler import TimeoutHandler
 
 ACC_METADATA = {"unit": "%", "format": ":.5f"}

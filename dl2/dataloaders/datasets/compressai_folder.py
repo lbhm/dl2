@@ -16,12 +16,19 @@ from typing import Callable, Optional
 
 import compressai
 import torch
-from PIL import Image
 from compressai.zoo import models
+from PIL import Image
 from torchvision.datasets import DatasetFolder
 from torchvision.transforms.functional import to_pil_image
 
-from .utils import EXTENSIONS, crop_image, parse_header, read_bytes, read_uchars, read_uints
+from .utils import (
+    EXTENSIONS,
+    crop_image,
+    parse_header,
+    read_bytes,
+    read_uchars,
+    read_uints,
+)
 
 
 def compressai_worker_init_fn(worker_id: int) -> None:

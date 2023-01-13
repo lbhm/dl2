@@ -36,8 +36,8 @@ import numpy as np
 import torch
 import torchvision.transforms as transforms
 
-from .datasets import DATASETS, WORKER_INIT_FNS
 from .augmentation.autoaugment import AutoaugmentImageNetPolicy
+from .datasets import DATASETS, WORKER_INIT_FNS
 
 
 class PrefetchedWrapper(object):

@@ -42,16 +42,17 @@ import torch.nn as nn
 import torch.optim
 import torch.utils.data
 import torch.utils.data.distributed
-
-from dataloaders import DATA_LOADER_CHOICES as DL_CHOICES, get_data_loaders
+from dataloaders import DATA_LOADER_CHOICES as DL_CHOICES
+from dataloaders import get_data_loaders
 from dataloaders.datasets import DATASET_CHOICES
 from models.model_and_loss import ModelAndLoss
 from models.model_zoo import ARCH_CHOICES, CONFIG_CHOICES
 from models.optimizers import get_optimizer
 from training import train_loop
 from utils.logging import Logger, format_step
-from utils.lr_policies import LR_POLICY_CHOICES as LR_CHOICES, get_lr_policy
-from utils.smoothing import LabelSmoothing, NLLMultiLabelSmooth, MixUpWrapper
+from utils.lr_policies import LR_POLICY_CHOICES as LR_CHOICES
+from utils.lr_policies import get_lr_policy
+from utils.smoothing import LabelSmoothing, MixUpWrapper, NLLMultiLabelSmooth
 
 
 def parse_args():
