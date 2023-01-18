@@ -134,7 +134,8 @@ clear-cache;
 memlim python dl2/main.py -d data-ssd/imagenet/raw/ -a alexnet -l dali-cpu -w 40 -b 512 -e 6 --lr 0.0512 --wd 6.103515625e-05 --amp --static-loss-scale 128 --workspace logs/h1 -n alex-raw-ssd-w40;
 clear-cache;
 
-## Addition: AlexNet with synthetic data loader
+## Addition: ResNet50 and AlexNet with synthetic data loader
+python dl2/main.py -d no/real/dataset -a resnet50 -l synthetic -b 256 -e 6 --lr 0.256 --wd 6.103515625e-05 --amp --static-loss-scale 128 --synth-train-samples 1281167 --synth-val-samples 50000 --workspace logs/h1 -n r50-raw-synth;
 python dl2/main.py -d no/real/dataset -a alexnet -l synthetic -b 512 -e 6 --lr 0.0512 --wd 6.103515625e-05 --amp --static-loss-scale 128 --synth-train-samples 1281167 --synth-val-samples 50000 --workspace logs/h1 -n alex-raw-synth;
 
 ## Addition: JPEG vs WebP CPU resource comparison
