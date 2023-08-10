@@ -1,13 +1,16 @@
 @inproceedings{behme_art_2023,
-  title        = {The Art of Losing to Win: Using Lossy Image Compression
-                  to Improve Data Loading in Deep Learning Pipelines},
-  author       = {Lennart Behme and
-                  Saravanan Thirumuruganathan and
-                  Alireza Rezaei Mahdiraji and
-                  Jorge{-}Arnulfo Quian\'{e}{-}Ruiz and
-                  Volker Markl},
-  year         = {2023},
-  booktitle    = {39th IEEE International Conference on Data Engineering},
-  address      = {Anaheim, California},
+  title        = {
+    The Art of Losing to Win: Using Lossy Image Compression to Improve Data Loading in
+    Deep Learning Pipelines
+  },
+  author       = {
+    Behme, Lennart and Thirumuruganathan, Saravanan and Mahdiraji, Alireza Rezaei and
+    Quian\'{e}-Ruiz, Jorge-Arnulfo and Markl, Volker
+  },
+  year         = 2023,
+  booktitle    = {{IEEE} 39th International Conference on Data Engineering ({ICDE})},
+  address      = {Anaheim, CA, USA},
+  pages        = {936--949},
+  doi          = {10.1109/ICDE55515.2023.00077},
   eventtitle   = {{ICDE} '23}
 }
